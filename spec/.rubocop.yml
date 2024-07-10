@@ -1,0 +1,3 @@
+inherit_from:
+  - ../.rubocop.yml
+  - https://raw.githubusercontent.com/pixta-dev/pixta-rubocop/master/rubocop_for_spec.yml

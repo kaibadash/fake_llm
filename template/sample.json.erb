@@ -1,0 +1,6 @@
+<%
+json = {
+    text: "Hello! Your messages are: #{JSON.pretty_generate(params[:messages])}"
+}
+%>
+<%= JSON.pretty_generate(json) %>

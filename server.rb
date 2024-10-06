@@ -3,9 +3,19 @@
 require "socket"
 require "json"
 require "securerandom"
+require "yaml"
+require "erb"
 require_relative "request_handler/base"
 require_relative "request_handler/completions"
 require_relative "request_handler/models"
+
+port = 12_345
+
+ARGV.each_with_index do |arg, index|
+  port = ARGV[index + 1].to_i if arg == "-p" && ARGV[index + 1]
+end
+
+puts "start server on port #{port}"
 
 def handle_request(request)
   method, path, = request.lines[0].split
@@ -21,13 +31,15 @@ def handle_request(request)
   end
   handler.handle_request(request)
 rescue StandardError => e
+  puts e.message
   [e.message, "500 Internal Server Error", false]
 end
 
-server = TCPServer.new(12_345)
+server = TCPServer.new(port)
 loop do
   client = server.accept
   request = client.readpartial(2048)
+
   body, status, stream = handle_request(request)
 
   if stream

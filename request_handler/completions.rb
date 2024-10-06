@@ -2,6 +2,11 @@
 
 module RequestHandler
   class Completions < RequestHandler::Base
+    def initialize
+      super
+      @config = YAML.load_file("config.yml")
+    end
+
     def generate_streaming_responses(params)
       response = generate_response_message(params)
       response.chars.map do |c|
@@ -35,6 +40,7 @@ module RequestHandler
       end
     end
 
+    # rubocop:disable Metrics/MethodLength
     def handle_request(request)
       body = request.split("\r\n\r\n", 2).last
       params = JSON.parse(body, symbolize_names: true)
@@ -65,11 +71,23 @@ module RequestHandler
 
       [response.to_json, "200 OK", false]
     end
+    # rubocop:enable Metrics/MethodLength
 
     private
 
     def generate_response_message(params)
-      "This is a fake response. Your request is...\n```#{JSON.pretty_generate(params[:messages])}```"
+      request_body = JSON.pretty_generate(params[:messages])
+      puts "request: #{request_body}"
+      matched_config = @config.find { |cfg| request_body.include?(cfg.keys.first) }
+      if matched_config.nil?
+        return "This is a fake response made by kaibadash/fake_llm.\
+          Your request is...\n```#{request_body}```"
+      end
+
+      puts "config: #{matched_config.keys.last}"
+      result = ERB.new(File.read(matched_config.values.first)).result(binding)
+      puts "rendered result: #{result}"
+      result
     end
   end
 end

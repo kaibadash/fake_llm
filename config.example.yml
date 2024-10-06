@@ -1,0 +1,3 @@
+# keyword to template mapping
+- hello: template/sample_hello.erb
+- json: template/sample.json.erb
